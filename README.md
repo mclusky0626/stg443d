@@ -1,8 +1,9 @@
-# StG 44 — the Sturmgewehr, taken apart in 3D
+# StG 44 — the Sturmgewehr, What an interactive website even I was suprised as f
 
 A scroll-driven study of the Sturmgewehr 44, built on the method in
 *The Interactive 3D Website Guide* (@designedby.russ): one hero object, the
 scrollbar as a timeline, real HTML words over a transparent canvas.
+개발자의 시대는끝
 
 ```bash
 npm install
