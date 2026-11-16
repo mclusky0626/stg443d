@@ -267,7 +267,7 @@ export default function App() {
       {poster && (
         <img
           className={`poster${status === 'ready' ? ' is-gone' : ''}`}
-          src="/poster.webp"
+          src={`${import.meta.env.BASE_URL}poster.webp`}
           alt="A Sturmgewehr 44 seen from the front right"
           onError={() => setPoster(false)}
           onTransitionEnd={() => status === 'ready' && setPoster(false)}

@@ -18,7 +18,7 @@ scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnviron
 const camera = new THREE.PerspectiveCamera(num('fov', 28), 1, 0.01, 50);
 const loader = new GLTFLoader();
 loader.setMeshoptDecoder(MeshoptDecoder);
-loader.load('/models/stg44.glb', (gltf) => {
+loader.load(`${import.meta.env.BASE_URL}models/stg44.glb`, (gltf) => {
   const only = q.get('only')?.split(','), hide = q.get('hide')?.split(',') || [];
   const names = [];
   gltf.scene.traverse((o) => {

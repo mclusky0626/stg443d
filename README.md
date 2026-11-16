@@ -52,3 +52,12 @@ The converter stands the rifle upright on its measured bore axis, scales it to
 
 `C` hides the interface for filming. `A` plays the whole page on rails.
 `/debug.html?az=0&el=5&dist=1.6&only=receiver,bolt` (dev server only) looks at the model part by part.
+
+## GitHub Pages
+
+Live site: https://mclusky0626.github.io/stg443d/
+
+Pushes to `main` build and deploy automatically with GitHub Actions.
+The workflow sets Vite's base path from the Pages configuration so models,
+images and bundled assets work under the repository subdirectory.
+Local development continues to use `http://localhost:5184/`.

@@ -493,7 +493,7 @@ export function createStage({ canvas, lenis, reducedMotion = false, onChapter, o
   const loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
   loader.load(
-    '/models/stg44.glb',
+    `${import.meta.env.BASE_URL}models/stg44.glb`,
     async (gltf) => {
       const maxAniso = renderer.capabilities.getMaxAnisotropy();
       const seen = new Set();

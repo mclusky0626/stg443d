@@ -28,6 +28,7 @@ function saveStill() {
 }
 
 export default defineConfig({
+  base: process.env.PAGES_BASE_PATH || '/',
   plugins: [react(), saveStill()],
   server: { port: 5184, strictPort: false },
   build: { target: 'es2020', chunkSizeWarningLimit: 900 },
