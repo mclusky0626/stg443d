@@ -2,7 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Lenis from 'lenis';
 import { createStage } from './three/stage.js';
 import { LABELS, DIMS } from './three/parts.js';
-import { HERO, CHAPTERS, ROUNDS, SPECS, LEGACY, OUTRO, NAV, WORDS, SIDES, CREDIT } from './content.js';
+import * as EN from './content.js';
+import * as KO from './content-ko.js';
+import { WORDS, SIDES, CREDIT } from './content.js';
+import { LocaleContext, useTranslation, initialLocale } from './i18n.js';
 
 function Head({ no, kicker, title, lede, id }) {
   return (
@@ -42,16 +45,18 @@ function roundShape(r) {
   return { body, bullet };
 }
 
-function Rounds() {
+function Rounds({ rounds, locale }) {
+  const t = useTranslation();
+  const ROUNDS = rounds;
   const top = Math.max(...ROUNDS.map((r) => r.energy));
   return (
     <figure className="rounds">
-      <figcaption>Three cartridges, drawn to the same scale</figcaption>
+      <figcaption>{t('Three cartridges, drawn to the same scale')}</figcaption>
       {ROUNDS.map((r) => {
         const { body, bullet } = roundShape(r);
         return (
           <div key={r.id} className={`round${r.hero ? ' is-hero' : ''}`}>
-            <svg viewBox="-0.6 -6.6 82 13.2" role="img" aria-label={`${r.name} cartridge, ${r.total} millimetres long`}>
+            <svg viewBox="-0.6 -6.6 82 13.2" role="img" aria-label={locale === 'ko' ? `${r.name} 탄약, 전체 길이 ${r.total} mm` : `${r.name} cartridge, ${r.total} millimetres long`}>
               <path className={`round__case${r.steel ? ' is-steel' : ''}`} d={body} />
               <path className="round__groove" d={`M1.5 ${-r.base / 2}V${r.base / 2}`} />
               <path className="round__bullet" d={bullet} />
@@ -76,6 +81,7 @@ function Rounds() {
 
 // The touch: the visitor works the rifle's own controls.
 function Controls({ stage, active }) {
+  const t = useTranslation();
   const [safe, setSafe] = useState(false);
   const [auto, setAuto] = useState(false);
   const [range, setRange] = useState(100);
@@ -110,30 +116,30 @@ function Controls({ stage, active }) {
   return (
     <div className="panel">
       <div className="panel__row">
-        <span className="panel__label">Safety</span>
-        <div className="seg" role="group" aria-label="Safety">
+        <span className="panel__label">{t('Safety')}</span>
+        <div className="seg" role="group" aria-label={t('Safety')}>
           <button type="button" aria-pressed={safe} onClick={() => { setSafe(true); setNote('Lever up: safe.'); }}>
-            <b>S</b> Safe
+            <b>S</b> {t('Safe')}
           </button>
           <button type="button" aria-pressed={!safe} onClick={() => { setSafe(false); setNote('Lever down: ready to fire.'); }}>
-            <b>F</b> Fire
+            <b>F</b> {t('Fire')}
           </button>
         </div>
       </div>
       <div className="panel__row">
-        <span className="panel__label">Selector</span>
-        <div className="seg" role="group" aria-label="Fire selector">
+        <span className="panel__label">{t('Selector')}</span>
+        <div className="seg" role="group" aria-label={t('Fire selector')}>
           <button type="button" aria-pressed={!auto} onClick={() => { setAuto(false); setNote('E stands proud on the left: single shots.'); }}>
-            <b>E</b> Single
+            <b>E</b> {t('Single')}
           </button>
           <button type="button" aria-pressed={auto} onClick={() => { setAuto(true); setNote('Pushed through to D: automatic fire.'); }}>
-            <b>D</b> Automatic
+            <b>D</b> {t('Automatic')}
           </button>
         </div>
       </div>
       <div className="panel__row">
         <label className="panel__label" htmlFor="sight-range">
-          Rear sight
+          {t('Rear sight')}
         </label>
         <div className="slider">
           <input id="sight-range" type="range" min="100" max="800" step="100" value={range} onChange={(e) => { setRange(Number(e.target.value)); setNote('The slider runs up the ramp and lifts the leaf.'); }} />
@@ -142,23 +148,30 @@ function Controls({ stage, active }) {
       </div>
       <div className="panel__acts">
         <button type="button" onClick={cock}>
-          Cock it
+          {t('Cock it')}
         </button>
         <button type="button" onClick={trigger}>
-          Squeeze the trigger
+          {t('Squeeze the trigger')}
         </button>
         <button type="button" onClick={magazine}>
-          {magOut ? 'Fit the magazine' : 'Release the magazine'}
+          {t(magOut ? 'Fit the magazine' : 'Release the magazine')}
         </button>
       </div>
       <p className="panel__note" role="status">
-        {note}
+        {t(note)}
       </p>
     </div>
   );
 }
 
 export default function App() {
+  const [locale, setLocale] = useState(initialLocale);
+  return <LocaleContext.Provider value={locale}><Experience locale={locale} setLocale={setLocale} /></LocaleContext.Provider>;
+}
+
+function Experience({ locale, setLocale }) {
+  const t = useTranslation();
+  const { HERO, CHAPTERS, ROUNDS, SPECS, LEGACY, OUTRO, NAV } = locale === 'ko' ? KO : EN;
   const canvasRef = useRef(null);
   const stageRef = useRef(null);
   const lenisRef = useRef(null);
@@ -199,6 +212,31 @@ export default function App() {
       lenis?.destroy();
     };
   }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+    document.title = locale === 'ko' ? 'StG 44 — 3D로 살펴보는 슈투름게베어' : 'StG 44 — the Sturmgewehr, taken apart in 3D';
+    try { localStorage.setItem('stg44-language', locale); } catch { /* Optional preference storage. */ }
+    const url = new URL(window.location.href);
+    url.searchParams.set('lang', locale);
+    window.history.replaceState(null, '', url);
+    const description = locale === 'ko'
+      ? '슈투름게베어 44의 역사와 구조를 3D로 살펴보세요. 탄약, 작동 원리, 제조 방식, 조작과 분해, 제원을 담은 인터랙티브 전시입니다.'
+      : 'An interactive 3D study of the Sturmgewehr 44: its origins, cartridge, action, manufacture, controls, field strip and specifications.';
+    document.querySelector('meta[property="og:title"]')?.setAttribute('content', document.title);
+    for (const selector of ['meta[name="description"]', 'meta[property="og:description"]']) {
+      document.querySelector(selector)?.setAttribute('content', description);
+    }
+    let cancelled = false;
+    const refresh = () => {
+      if (cancelled) return;
+      lenisRef.current?.resize();
+      stageRef.current?.remeasure();
+    };
+    const frame = requestAnimationFrame(refresh);
+    document.fonts?.ready.then(refresh);
+    return () => { cancelled = true; cancelAnimationFrame(frame); };
+  }, [locale]);
 
   const goTo = useCallback((id) => {
     const el = document.getElementById(`${id}-title`) || document.getElementById(id);
@@ -263,12 +301,12 @@ export default function App() {
         ))}
       </div>
 
-      <canvas ref={canvasRef} className={`stage${status === 'ready' ? ' is-ready' : ''}`} aria-label="Interactive 3D model of a Sturmgewehr 44 rifle. Drag to turn it." />
+      <canvas ref={canvasRef} className={`stage${status === 'ready' ? ' is-ready' : ''}`} aria-label={t('Interactive 3D model of a Sturmgewehr 44 rifle. Drag to turn it.')} />
       {poster && (
         <img
           className={`poster${status === 'ready' ? ' is-gone' : ''}`}
           src={`${import.meta.env.BASE_URL}poster.webp`}
-          alt="A Sturmgewehr 44 seen from the front right"
+          alt={t('A Sturmgewehr 44 seen from the front right')}
           onError={() => setPoster(false)}
           onTransitionEnd={() => status === 'ready' && setPoster(false)}
         />
@@ -291,7 +329,7 @@ export default function App() {
             )}
             <span className="dim__label">
               {d.value && <b>{d.value}</b>}
-              <em>{d.note}</em>
+              <em>{t(d.note)}</em>
             </span>
           </div>
         ))}
@@ -304,8 +342,8 @@ export default function App() {
             <i className="callout__stem" />
             <i className="callout__elbow" />
             <span className="callout__plate">
-              <b>{l.title}</b>
-              {l.note && <em>{l.note}</em>}
+              <b>{t(l.title)}</b>
+              {l.note && <em>{t(l.note)}</em>}
             </span>
           </div>
         ))}
@@ -320,7 +358,7 @@ export default function App() {
           <strong>StG 44</strong>
           <span>Sturmgewehr · 7.92 × 33</span>
         </a>
-        <nav aria-label="Chapters">
+        <nav aria-label={t('Chapters')}>
           {NAV.map((n) => (
             <a
               key={n.id}
@@ -334,6 +372,10 @@ export default function App() {
             </a>
           ))}
         </nav>
+        <div className="language-switch" role="group" aria-label={locale === 'ko' ? '언어 선택' : 'Language'}>
+          <button type="button" lang="ko" aria-pressed={locale === 'ko'} onClick={() => setLocale('ko')}>한국어</button>
+          <button type="button" lang="en" aria-pressed={locale === 'en'} onClick={() => setLocale('en')}>EN</button>
+        </div>
         <i className="topbar__progress" />
       </header>
 
@@ -356,8 +398,8 @@ export default function App() {
             </ul>
           </div>
           <p className="hint">
-            <span>Scroll to walk round it</span>
-            <span>Drag to turn it</span>
+            <span>{t('Scroll to walk round it')}</span>
+            <span>{t('Drag to turn it')}</span>
           </p>
         </section>
 
@@ -378,7 +420,7 @@ export default function App() {
               {c.body.map((p, i) => (
                 <p key={i}>{p}</p>
               ))}
-              {c.cartridges && <Rounds />}
+              {c.cartridges && <Rounds rounds={ROUNDS} locale={locale} />}
               {c.controls && <Controls stage={stageRef} active={chapter === c.id} />}
               {c.timeline && (
                 <ol className="timeline">
@@ -390,7 +432,7 @@ export default function App() {
                   ))}
                 </ol>
               )}
-              {c.facts && <Facts rows={c.facts} label={`${c.kicker} figures`} />}
+              {c.facts && <Facts rows={c.facts} label={locale === 'ko' ? `${c.kicker} 제원` : `${c.kicker} figures`} />}
             </div>
           </section>
         ))}
@@ -433,42 +475,43 @@ export default function App() {
             <h2 id="outro-title">{OUTRO.title}</h2>
             <p>{OUTRO.text}</p>
             <div className="stripper">
-              <label htmlFor="strip-slider">Assembled</label>
-              <input id="strip-slider" type="range" min="0" max="1" step="0.005" value={strip} onChange={(e) => setStrip(Number(e.target.value))} aria-label="Field strip the rifle" />
-              <span>Stripped</span>
+              <label htmlFor="strip-slider">{t('Assembled')}</label>
+              <input id="strip-slider" type="range" min="0" max="1" step="0.005" value={strip} onChange={(e) => setStrip(Number(e.target.value))} aria-label={t('Field strip the rifle')} />
+              <span>{t('Stripped')}</span>
             </div>
             <button type="button" className="again" onClick={() => { setStrip(0); goTo('hero'); }}>
-              Back to the start
+              {t('Back to the start')}
             </button>
           </div>
           <footer className="foot">
             <p>
-              3D model: “{CREDIT.title}” by{' '}
-              <a href={CREDIT.source} target="_blank" rel="noreferrer">
-                {CREDIT.author} on Sketchfab
-              </a>
-              , licensed{' '}
-              <a href={CREDIT.licenseUrl} target="_blank" rel="noreferrer">
-                {CREDIT.license}
-              </a>
-              . Changed for this page: stood upright on its bore axis, scaled to 940 mm, split into 23 moving parts, textures compressed. A historical and technical study; figures are the commonly published ones.
+              {locale === 'ko' ? '3D 모델: ' : '3D model: '}“{CREDIT.title}” ·{' '}
+              <a href={CREDIT.source} target="_blank" rel="noreferrer">{CREDIT.author} on Sketchfab</a>
+              {' · '}<a href={CREDIT.licenseUrl} target="_blank" rel="noreferrer">{CREDIT.license}</a>
+              {locale === 'ko'
+                ? '. 이 페이지를 위해 총열 중심선을 기준으로 자세를 바로잡고 전체 길이를 940 mm로 조정했으며, 23개의 움직이는 부품으로 나누고 텍스처를 압축했습니다. 역사와 구조를 살펴보기 위한 전시이며, 수치는 일반적으로 알려진 자료를 따릅니다.'
+                : '. Changed for this page: stood upright on its bore axis, scaled to 940 mm, split into 23 moving parts, textures compressed. A historical and technical study; figures are the commonly published ones.'}
             </p>
             <p>
-              Built with three.js, React, Vite and Lenis, following The Interactive 3D Website Guide by @designedby.russ. Keys: <kbd>C</kbd> hides the interface, <kbd>A</kbd> plays the page on rails.
+              {locale === 'ko'
+                ? '@designedby.russ의 The Interactive 3D Website Guide를 참고해 three.js, React, Vite, Lenis로 제작했습니다. 단축키: '
+                : 'Built with three.js, React, Vite and Lenis, following The Interactive 3D Website Guide by @designedby.russ. Keys: '}
+              <kbd>C</kbd>{locale === 'ko' ? ' 화면 안내 숨기기, ' : ' hides the interface, '}
+              <kbd>A</kbd>{locale === 'ko' ? ' 페이지 자동 재생.' : ' plays the page on rails.'}
             </p>
           </footer>
         </section>
       </main>
 
       <div className={`status${status === 'loading' ? ' is-on' : ''}`} role="status">
-        {status === 'loading' && `Loading the model${loaded > 0 ? ` · ${Math.round(loaded * 100)}%` : ''}`}
+        {status === 'loading' && `${t('Loading the model')}${loaded > 0 ? ` · ${Math.round(loaded * 100)}%` : ''}`}
       </div>
       {status === 'failed' && (
         <p className="nogl" role="note">
-          This browser could not start WebGL, so the rifle is shown as a still. Everything written here is complete.
+          {t('This browser could not start WebGL, so the rifle is shown as a still. Everything written here is complete.')}
         </p>
       )}
-      {auto && <div className="rails">Playing · scroll to stop</div>}
+      {auto && <div className="rails">{t('Playing · scroll to stop')}</div>}
     </>
   );
 }

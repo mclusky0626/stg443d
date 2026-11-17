@@ -62,3 +62,13 @@ Pushes to `main` build and deploy automatically with GitHub Actions.
 The workflow sets Vite's base path from the Pages configuration so models,
 images and bundled assets work under the repository subdirectory.
 Local development continues to use `http://localhost:5184/`.
+
+## Languages
+
+Use the top-right **한국어 / EN** buttons to switch languages. The site translates
+chapters, specifications, 3D callouts and control feedback while keeping the
+current model and control state. It remembers the selected language locally;
+first-time visitors use their browser language. A `?lang=ko` or `?lang=en` URL
+opens that language directly, including on GitHub Pages.
+
+Korean: https://mclusky0626.github.io/stg443d/?lang=ko

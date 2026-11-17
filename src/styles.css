@@ -1128,3 +1128,35 @@ body.is-clean .story * {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Language controls share the drawing sheet's ink, rules and signal red. */
+.topbar nav { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.topbar nav::-webkit-scrollbar { display: none; }
+.brand, .language-switch { flex-shrink: 0; }
+.language-switch { display: flex; border: 1px solid var(--line); background: var(--plate); }
+.language-switch button {
+  padding: 7px 9px;
+  border: 0;
+  background: transparent;
+  color: var(--ink-3);
+  font: 500 11px/1.2 var(--f-body);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.language-switch button[aria-pressed='true'] { background: var(--ink); color: var(--paper-hi); }
+.language-switch button:hover { color: var(--accent); }
+:root:lang(ko) {
+  --f-display: 'Barlow Condensed', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --f-body: 'Barlow', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --f-mono: 'IBM Plex Mono', 'Apple SD Gothic Neo', 'Malgun Gothic', monospace;
+}
+:lang(ko) .head h2, :lang(ko) .outro h2 {
+  font-size: clamp(40px, 4vw, 62px);
+  line-height: 1.16;
+  word-break: keep-all;
+  letter-spacing: -0.035em;
+}
+:lang(ko) .hero h1 { line-height: 1.12; letter-spacing: -0.035em; word-break: keep-all; }
+:lang(ko) .lede, :lang(ko) .hero__lede, :lang(ko) .col p, :lang(ko) .steps, :lang(ko) .foot { word-break: keep-all; overflow-wrap: break-word; }
+:lang(ko) .lede { line-height: 1.65; }
+:lang(ko) .callout__plate b { line-height: 1.3; }
